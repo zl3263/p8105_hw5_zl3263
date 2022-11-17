@@ -19,7 +19,7 @@ homicides = read_csv("https://raw.githubusercontent.com/washingtonpost/data-homi
 
 **Description**
 
-The dataset record the homicides  information of 50 U.S cities. It contains `r nrow(homicides_raw)` observations and `r ncol(homicides_raw)` variables.The key variables include victims' name, sex, age and race. The location(`city`,`state`,`lat`,`lon`) and report time are also recorded.
+The dataset record the homicides  information of 50 U.S cities. It contains `r nrow(homicides)` observations and `r ncol(homicides)` variables.The key variables include victims' name, sex, age and race. The location(`city`,`state`,`lat`,`lon`) and report time are also recorded.
 
 **Count unsolved numbers**
 

@@ -78,3 +78,75 @@ solve_count %>%
   
 ```
 
+### Problem 3
+
+**generate simulation data**
+```{r, cache=TRUE}
+simtest_muhat = function(mu, sigma = 5, n = 30){
+  
+  x = rnorm(n = n, mean = mu, sd = sigma)
+  
+  result = t.test(x,mu = 0) %>%
+    broom::tidy()%>%
+    select(estimate,p.value)
+  
+  
+  return(result)
+}
+
+sim_results_df = 
+  expand_grid(
+    mu = c(0, 1, 2, 3, 4, 5),
+    iter = 1:5000
+  ) %>% 
+  mutate(
+    test_coef = map(mu, simtest_muhat)
+  ) %>% 
+  unnest(test_coef)
+
+```
+
+**Plot**
+
+```{r}
+sim_results_df %>%
+  mutate(
+    reject = ifelse(p.value < 0.05, TRUE, FALSE)
+  )%>%
+  group_by(mu) %>%
+  summarise(
+    rej_r = sum(reject)/n()
+  ) %>%
+  ggplot(aes(x = mu, y = rej_r)) +
+  geom_line() +
+  labs(
+    x = "μ",
+	  y = "Reject Proportion",
+  )
+```
+
+The plot shows the rejected proportion of each $\mu$ at h0: $\mu = 0$  to be tested. According to the plot, the effect size have positive relationship with the power of test.
+
+```{r}
+sim_results_df %>%
+  mutate(
+    reject = ifelse(p.value < 0.05, TRUE, FALSE)
+  ) %>%
+  group_by(mu) %>%
+  summarise(
+    mean_muhat = mean(estimate),
+    mean_murej = sum(estimate*as.numeric(reject))/sum(reject)
+  ) %>%
+  pivot_longer(
+    mean_muhat:mean_murej,
+    names_to = "type",
+    values_to = "mean_mu"
+  )%>%
+  ggplot(aes(x = mu, y = mean_mu, color = type)) +
+  geom_line()+
+  labs(
+    x = "True μ",
+	  y = "Average μ hat",
+  )
+```
+When the true $\mu$ is close but not equal to the $\mu$ value (0) in H0, the average of $\hat{\mu} $ is away from the true $\mu$, because when $\hat{\mu}$ is close enough to 0 test fail to reject H0. As the true  $\mu$ gets more and more faraway from the $\mu$ to be tested, in fewer case the "fail to reject" happens and $\hat{\mu}$ get closer to true $\mu$
